@@ -1,0 +1,58 @@
+#! /bin/sh
+
+PATH="${PWD}/dependency/bin:$PATH"
+
+test_text()
+{
+   echo "*** $1"
+
+   local text="$1"
+
+   echo "Creating escaped text file \"demo.inc\"" >&2
+   mulle-c-string-escape < "${text}" > demo.inc || exit 1
+
+   echo "Compiling C file \"demo.c\"" >&2
+   cc -o demo demo.c || exit 1
+
+   echo "Producing output \"output.txt\"" >&2
+   ./demo > output.txt || exit 1
+
+   echo "Diffing \"${text}\" and \"output.txt\"" >&2
+   diff "${text}" output.txt
+}
+
+
+test_binary()
+{
+   echo "*** $1"
+
+   local binary="$1"
+
+   echo "Creating escaped text file \"demo2.inc\"" >&2
+   mulle-c-string-escape < "${binary}" > demo2.inc || exit 1
+
+   echo "Compiling C file \"demo2.c\"" >&2
+   cc -o demo2 demo2.c || exit 1
+
+   echo "Producing output \"output.bin\"" >&2
+   ./demo2 > output.bin || exit 1
+
+   echo "Diffing \"${binary}\" and \"output.bin\"" >&2
+   diff -b "${binary}" output.bin
+}
+
+test_text demo.txt       || exit 1
+test_text printable.txt  || exit 1
+test_text escapable.txt  || exit 1
+test_text ascii.txt     || exit 1
+
+test_binary zero-and-delete.txt  || exit 1
+test_binary 128-159.txt  || exit 1
+test_binary 160-191.txt  || exit 1
+test_binary 192-223.txt  || exit 1
+test_binary 224-254.txt  || exit 1
+test_binary 255.txt  || exit 1
+
+test_binary iso1.txt  || exit 1
+
+test_binary "`which mulle-c-string-escape`"  || exit 1
