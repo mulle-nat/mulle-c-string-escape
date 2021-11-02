@@ -4,7 +4,7 @@
 /*
  *  version:  major, minor, patch
  */
-#define MULLE_C_STRING_ESCAPE_VERSION  ((0 << 20) | (7 << 8) | 56)
+#define MULLE_C_STRING_ESCAPE_VERSION  ((1 << 20) | (0 << 8) | 0)
 
 
 static inline unsigned int   mulle_c_string_escape_get_version_major( void)
