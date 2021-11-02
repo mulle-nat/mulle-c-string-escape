@@ -1,4 +1,5 @@
 kitchen/
 stash/
+build/
 var/
 dependency/

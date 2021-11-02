@@ -1,0 +1,8 @@
+COMPILE=../kitchen/Debug/mulle-c-string-escape
+
+.PHONY:	all
+
+
+usage.inc:	usage.txt Makefile-usage
+	$(COMPILE) -0 -e -l 120  < $< > $@
+

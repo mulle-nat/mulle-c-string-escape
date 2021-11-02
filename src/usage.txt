@@ -1,16 +1,25 @@
-mulle-c-string-escape [-h|--help|help]
+Usage:
+	mulle-c-string-escape [options] [infile] [outfile]
 
 ➿ mulle-c-string-escape turns data into C-strings
 
 It will escape non-ASCII characters to hex or octal, and use C-escapes for the
-known C escapes. It will separate the output into lines not longer than
-80 charactes.
+known C escapes. It will separate the output into lines so they should fit
+a visually pleasing line length.
 
 You can easily `#include` the output, or just copy/paste it.
 
 Reads from standard input and writes to standard output. You can also use
 it on binary files.
 
-So use it with redirection like:
+Example:
+	mulle-c-string-escape -0 -l 120 < mytext.txt
 
-mulle-c-string-escape < mytext.txt
+Options:
+	-[01234] : zero to four space prefix (TAB)
+	-h       : help
+	-e       : escape TAB characters
+	-l <n>   : targetted line length (80)
+	-n       : don't create a new line for linefeeds in text
+	-p <s>   : use a custom prefix instead of spaces or TAB
+	-t <s>   : visual size of TAB in text (8)
