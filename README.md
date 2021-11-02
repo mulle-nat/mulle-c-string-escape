@@ -4,30 +4,33 @@
 
 Non-ASCII characters will be escaped to hex or octal. C-escapes are used for
 known C escapes like '\b'. The output is separated into lines of approximately
-even length and does not exceed the chosen line length. An example output
-is [usage.inc](src/usage.inc)
+even length and does not exceed the chosen line length. An example of a 
+conversion is [usage.txt](src/usage.txt) being turned into [usage.inc](src/usage.inc).
 You can feed it binary or text files.
 
-You can then easily `#include` the output as string contents, or copy/paste it
-into your C program like so:
+You can `#include` the output as string contents, or copy/paste it into your C 
+program like so:
 
 ```
-static char  text[] =
+static char  data[] =
 #include "data.inc"
 ;
 ```
 
 > #### Note
 >
-> C will append a "\0" to strings!
+> C will append a '\0' character to strings! So the actual data length 
+> is `sizeof( data) - 1`.
+
+## Options
 
 See the [usage.txt](src/usage.txt) for options.
 
 ## Example
 
 Use mulle-c-string-escape to create a string representation of itself. We use
-`cmake` here instead of `mulle-sde craft --release` here too ease the fear
-of the unkown:
+`cmake` here, instead of `mulle-sde craft --release`, too ease the developers 
+fear of the unknown:
 
 ```
 mkdir -p kitchen/Release
@@ -77,4 +80,11 @@ mulle-sde craft
 
 ## Dedication
 
-This little tool is dedicated to the memory of Oliver Mondry (mondry@me.com)
+To the memory of Oliver "General" Mondry (mondry@me.com)
+
+
+## Author
+
+[Nat!](//www.mulle-kybernetik.com/weblog) for
+[Mulle kybernetiK](//www.mulle-kybernetik.com).
+

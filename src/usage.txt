@@ -1,34 +1,34 @@
 Usage:
-	mulle-c-string-escape [options] [infile] [outfile]
+   mulle-c-string-escape [options] [infile] [outfile]
 
-➿ mulle-c-string-escape turns data into C-strings
+   ➿ mulle-c-string-escape turns data into C-strings
 
-Non-ASCII characters will be escaped to hex or octal. C-escapes are used for
-known C escapes like '\b'. The output is separated into lines of approximately
-even length and does not exceed the chosen line length.
-You can feed it binary or text files.
+   Non-ASCII characters will be escaped to hex or octal. C-escapes are used for
+   known C escapes like '\b'. The output is separated into lines of approximately
+   even length and does not exceed the chosen line length.
+   You can feed it binary or text files.
 
-You can then easily `#include` the output, or copy/paste it into your
-C program like so:
+   You can then easily `#include` the output, or copy/paste it into your
+   C program like so:
 
-   static char  data[] =
-   #include "data.inc"
-   ;
-   #define s_data  (sizeof( data) - 1)
+      static char  data[] =
+      #include "data.inc"
+      ;
+      #define s_data  (sizeof( data) - 1)
 
 Example:
-	mulle-c-string-escape -0 -l 120 < mytext.txt
+   mulle-c-string-escape -0 -l 120 < mytext.txt
 
 Options:
-	-[01234] : zero to four space prefix (TAB)
-	-h       : this help
-	-e       : escape TAB characters
-	-l <n>   : targetted line length (80)
-	-n       : don't create a new line for linefeeds in text
-	-p <s>   : use a custom prefix instead of spaces or TAB
-	-t <s>   : visual size of TAB in text (8)
+   -[01234] : zero to four space prefix (TAB)
+   -h       : this help
+   -e       : escape TAB characters
+   -l <n>   : targetted line length (80)
+   -n       : don't create a new line for linefeeds in text
+   -p <s>   : use a custom prefix instead of spaces or TAB
+   -t <s>   : visual size of TAB in text (8)
    -v       : print version information and exit
 
 Dedication:
-   This little tool is dedicated to the memory of Oliver Mondry (mondry@me.com)
+   To the memory of Oliver "General" Mondry (mondry@me.com)
 
