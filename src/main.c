@@ -17,12 +17,31 @@ static void   usage( void)
    exit( 0);
 }
 
-static inline size_t _calc_emit_buf_size( size_t prefix_length, 
-                                          size_t text_length)
+static inline size_t   calc_emit_buf_size( size_t prefix_length,
+                                           size_t text_length)
 {
    //    "prefix" '"'    <characters>  '"' '\n' '\0'
    return( prefix_length + 1 + text_length + 1 + 1 + 1);
 }
+
+
+static size_t   tabs_extra( char *s, size_t tab_size)
+{
+   size_t   n;
+   size_t   extra;
+   int      c;
+
+   if( ! tab_size)
+      return( 0);
+
+   extra = tab_size - 1;
+   n     = 0;
+   while( c = *s++)
+      n += (c == '\t') ? extra : 0;
+
+   return( n);
+}
+
 
 struct emit
 {
@@ -39,6 +58,9 @@ struct emit
 };
 
 
+static char   warning_prefix[] = "mulle-c-string-escape warning";
+
+
 static void   emit_init( struct emit *e, 
                          char *prefix, 
                          unsigned int line_length, 
@@ -47,6 +69,7 @@ static void   emit_init( struct emit *e,
 {
    size_t   prefix_length;
    size_t   text_length;
+   size_t   visible_cut;
 
    memset( e, 0, sizeof( *e));
 
@@ -54,28 +77,45 @@ static void   emit_init( struct emit *e,
       line_length = 80;
 
    if( line_length <= 3)
-      usage();
+   {
+      fprintf( stderr, "%s : line length too small\n", warning_prefix);
+      line_length = 80;
+   }
 
    text_length = line_length - 3;
    
    // todo: should parse prefix for tab charactes and adjust length
    if( ! prefix)
    {
-      if( text_length <= e->tab_size)
-         usage();
-      text_length  -= e->tab_size; // 8 i 
-      prefix        = "\t";
+      if( text_length <= tab_size)
+      {
+         fprintf( stderr, "%s : tab size too large\n", warning_prefix);
+         tab_size = 0;
+         prefix   = "";
+      }
+      else
+      {
+         text_length  -= tab_size; // 8 i
+         prefix        = "\t";
+      }
       prefix_length = 1;
    }
    else
    {
       prefix_length = strlen( prefix);
-      if( text_length <= prefix_length)
-         usage();
-      text_length  -= prefix_length;
+      if( text_length > prefix_length)
+         text_length  -= prefix_length;
+      else
+         fprintf( stderr, "%s : prefix is too large to fit\n", warning_prefix);
+
+      visible_cut = tabs_extra( prefix, tab_size);
+      if( visible_cut < text_length)
+         text_length -= visible_cut;
+      else
+         fprintf( stderr, "%s : tabs take up too much room\n", warning_prefix);
    }
 
-   e->buf = malloc( _calc_emit_buf_size( prefix_length, text_length));
+   e->buf = malloc( calc_emit_buf_size( prefix_length, text_length));
    if( ! e->buf)
       abort();
 
@@ -108,13 +148,10 @@ static inline void   emit_set_flush_on_lf( struct emit *e, int flush_on_lf)
 
 static void   emit_done( struct emit *e)
 {
-   if( e)
-   {
-      free( e->buf);
-      fflush( e->fp);
-      if( e->fp != stdout)
-         fclose( e->fp);
-   }
+   free( e->buf);
+   fflush( e->fp);
+   if( e->fp != stdout)
+      fclose( e->fp);
 }
 
 
@@ -357,26 +394,25 @@ int  main( int argc, char *argv[])
    if( i != argc)
       usage();
 
-   c = getc_unlocked( fin);
-   if( c == EOF)
-      return( 0);
-
    emit_init( &e, prefix, line_length, tab_size, fout);
    emit_set_escape_tab( &e, escape_tab);
    emit_set_flush_on_lf( &e, flush_on_lf);
 
-   // need a look ahead (d)
-   do
+   c = getc_unlocked( fin);
+   if( c != EOF)
    {
-      d = getc_unlocked( fin);
-      emit_char_escape_if_needed( &e, c, d);
-      c = d;
+      // need a look ahead (d)
+      do
+      {
+         d = getc_unlocked( fin);
+         emit_char_escape_if_needed( &e, c, d);
+         c = d;
+      }
+      while( c != EOF);
+
+      if( emit_length( &e))
+         emit_flush( &e);
    }
-   while( c != EOF);
-
-   if( emit_length( &e))
-      emit_flush( &e);
-
    emit_done( &e);
 
    return( 0);
