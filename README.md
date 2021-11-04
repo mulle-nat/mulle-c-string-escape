@@ -28,9 +28,9 @@ See the [usage.txt](src/usage.txt) for options.
 
 ## Example
 
-Use mulle-c-string-escape to create a string representation of itself. We use
-`cmake` here, instead of `mulle-sde craft --release`, too ease the developers 
-fear of the unknown:
+Let's use **mulle-c-string-escape** to create a C string representation of 
+itself. We use `cmake` here, instead of `mulle-sde craft --release`, to ease 
+the developer's fear of the unknown:
 
 ```
 mkdir -p kitchen/Release
