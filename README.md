@@ -24,7 +24,7 @@ static char  data[] =
 
 ## Options
 
-See the [usage.txt](src/usage.txt) for options.
+See [usage.txt](src/usage.txt) for options.
 
 ## Example
 
