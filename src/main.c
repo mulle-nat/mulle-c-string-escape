@@ -38,14 +38,27 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <assert.h>
 
 #include "mulle-c-string-escape-version.h"
 
 
-static void   usage( void)
+static void   usage( char *s, ...)
 {
+   if( s)
+   {
+      va_list  args;
+
+      va_start( args, s);
+      fprintf( stderr, "mulle-c-string-escape error:");
+      vfprintf( stderr, s, args);
+      fprintf( stderr, "\n\n");
+      va_end( args);
+   }
+
    // eating own dogfood :)
-   printf( "%s", "" // keep ""
+   fprintf( stderr, "%s", "" // keep ""
 #include "usage.inc"
          );
    exit( 1);
@@ -324,6 +337,50 @@ static void   emit_char_escape_if_needed( struct emit *e, int c, int d)
 }
 
 
+static char   *mulle_vconcat( char *s, va_list args)
+{
+   va_list   copy;
+   size_t    len;
+   char      *p;
+   char      *q;
+   char      *buf;
+
+   va_copy( copy, args);
+
+   len = 0;
+   for( p = s; p; p = va_arg( args, char *))
+      len += strlen( s);
+
+   buf = malloc( len + 1);
+   if( ! buf)
+      return( buf);
+
+   for( q = buf, p = s; p; p = va_arg( copy, char *))
+   {
+      len = strlen( p);
+      memcpy( q, p, len);
+      q = &q[ len];
+   }
+   *q = 0;
+
+   va_end( copy);
+
+   return( buf);
+}
+
+
+static char   *mulle_concat( char *s, ...)
+{
+   va_list   args;
+   char      *buf;
+
+   va_start( args, s);
+   buf = mulle_vconcat( s, args);
+   va_end( args);
+   return( buf);
+}
+
+
 int  main( int argc, char *argv[])
 {
    struct emit    e;
@@ -331,10 +388,12 @@ int  main( int argc, char *argv[])
    int            d;
    int            i;
    int            escape_tab;
+   char           *auto_inc;
    FILE           *fin;
    FILE           *fout;
    int            flush_on_lf;
    char           *prefix;
+   char           *outfile;
    unsigned int   line_length;
    unsigned int   tab_size;
 
@@ -343,6 +402,7 @@ int  main( int argc, char *argv[])
    escape_tab  = 0;
    flush_on_lf = 1;
    tab_size    = 8;
+   auto_inc    = NULL;
 
    for( i = 1; i < argc; i++)
    {
@@ -365,16 +425,24 @@ int  main( int argc, char *argv[])
             prefix = "    ";
             continue;
 
+         case 'c' :
+            auto_inc = "YES";
+            continue;
+
          case 'e' :
             escape_tab = 1;
             continue;
 
+         case 'h' :
+            usage( NULL);
+            return( 0);
+
          case 'l' :
             if( ++i >= argc)
-               usage();
+               usage( "missing argument for %s", argv[ i]);
             line_length = (unsigned int) atoi( argv[ i]);
             if( line_length < 4)
-               usage();
+               usage( "line length %s is too small ", argv[ i]);
             continue;
 
          case 'n' :
@@ -383,16 +451,16 @@ int  main( int argc, char *argv[])
 
          case 'p' :
             if( ++i >= argc)
-               usage();
+               usage( "missing argument for %s", argv[ i]);
             prefix = argv[ i];
             continue;
 
          case 't' :
             if( ++i >= argc)
-               usage();
+               usage( "missing argument for %s", argv[ i]);
             tab_size = atoi( argv[ i]);
             if( (int) tab_size <= 0)
-               usage();
+               usage( "tab size %s is too small ", argv[ i]);
             continue;
 
          case 'v' :
@@ -403,7 +471,7 @@ int  main( int argc, char *argv[])
             exit( 0);
 
          default:
-            usage();
+            usage( "unknown input %s", argv[ i]);
          }
       break;
    }
@@ -417,23 +485,43 @@ int  main( int argc, char *argv[])
          perror( "infile");
          exit( 1);
       }   
+      if( auto_inc)
+         auto_inc = mulle_concat( argv[ i], ".inc", NULL);
       ++i;
    }
+   else
+      if( auto_inc)
+         usage( "-c without infile");
 
    fout = stdout;
-   if( i < argc)
+   if( i < argc || auto_inc)
    {
-      fout = fopen( argv[ i], "wb");
+      if( i < argc && auto_inc)
+         usage( "outfile with -c also specified");
+
+      if( auto_inc)
+         outfile = auto_inc;
+      else
+      {
+         outfile = argv[ i];
+         ++i;
+      }
+
+      fout = fopen( outfile, "wb");
       if( ! fin)
       {
          perror( "outfile");
          exit( 1);
       }   
-      ++i;
+
+      if( auto_inc)
+         free( outfile);
    }
 
+   assert( i <= argc);
+
    if( i != argc)
-      usage();
+      usage( "superflous arguments %s and on", argv[ i]);
 
    emit_init( &e, prefix, line_length, tab_size, fout);
    emit_set_escape_tab( &e, escape_tab);
