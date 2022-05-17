@@ -1,9 +1,9 @@
 # mulle-c-string-escape
 
-#### ➿ mulle-c-string-escape turns data into C-strings
+#### ➿ mulle-c-string-escape turns data into C strings
 
-Non-ASCII characters will be escaped to hex or octal. C-escapes are used for
-known C escapes like '\b'. The output is separated into lines of approximately
+Non-ASCII characters will be escaped to hex or octal. C escape sequences are used 
+for the predefined sequences like '\b'. The output is separated into lines of approximately
 even length and does not exceed the chosen line length. An example of a 
 conversion is [usage.txt](src/usage.txt) being turned into [usage.inc](src/usage.inc).
 You can feed it binary or text files.
