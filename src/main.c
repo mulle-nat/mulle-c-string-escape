@@ -142,8 +142,8 @@ static void   emit_init( struct emit *e,
       }
       else
       {
-         text_length  -= tab_size; // 8 i
-         prefix        = "\t";
+         text_length -= tab_size; // 8 i
+         prefix       = "\t";
       }
       prefix_length = 1;
    }
@@ -203,7 +203,7 @@ static void   emit_done( struct emit *e)
 
 
 // <characters> length between double quotes
-static int    emit_length( struct emit *e)
+static int   emit_length( struct emit *e)
 {
    return( (int) (e->p - e->start));
 }
@@ -381,6 +381,24 @@ static char   *mulle_concat( char *s, ...)
 }
 
 
+static void   fprint_filename_as_identifier( FILE *fp, char *s)
+{
+   for( ; *s; ++s)
+   {
+      if( isalnum( *s) || *s == '_' || *s == '$')
+      {
+         putc( *s, fp);
+         continue;
+      }
+
+      if( *s == '.' && s[ 1] == 'i' && s[ 2] == 'n' && s[ 3] == 'c' && ! s[ 4])
+         return;
+
+      putc( '_', fp);
+   }
+}
+
+
 int  main( int argc, char *argv[])
 {
    struct emit    e;
@@ -388,21 +406,30 @@ int  main( int argc, char *argv[])
    int            d;
    int            i;
    int            escape_tab;
+   int            quiet;
    char           *auto_inc;
    FILE           *fin;
    FILE           *fout;
    int            flush_on_lf;
    char           *prefix;
+   char           *infile;
    char           *outfile;
    unsigned int   line_length;
    unsigned int   tab_size;
+   int            wrap_in_c_code;
+   off_t          length;
 
-   line_length = 0;  // default: 80
-   prefix      = NULL;
-   escape_tab  = 0;
-   flush_on_lf = 1;
-   tab_size    = 8;
-   auto_inc    = NULL;
+   line_length    = 0;  // default: 80
+   prefix         = NULL;
+   escape_tab     = 0;
+   flush_on_lf    = 1;
+   tab_size       = 8;
+   auto_inc       = NULL;
+   wrap_in_c_code = 0;
+   length         = 0;
+   quiet          = 0;
+   infile         = NULL;
+   outfile        = NULL;
 
    for( i = 1; i < argc; i++)
    {
@@ -455,6 +482,10 @@ int  main( int argc, char *argv[])
             prefix = argv[ i];
             continue;
 
+         case 'q' :
+            quiet = 1;
+            continue;
+
          case 't' :
             if( ++i >= argc)
                usage( "missing argument for %s", argv[ i]);
@@ -479,14 +510,16 @@ int  main( int argc, char *argv[])
    fin = stdin;
    if( i < argc)
    {
-      fin = fopen( argv[ i], "rb");
+      infile = argv[ i];
+
+      fin = fopen( infile, "rb");
       if( ! fin)
       {
          perror( "infile");
          exit( 1);
       }   
       if( auto_inc)
-         auto_inc = mulle_concat( argv[ i], ".inc", NULL);
+         auto_inc = mulle_concat( infile, ".inc", NULL);
       ++i;
    }
    else
@@ -513,9 +546,6 @@ int  main( int argc, char *argv[])
          perror( "outfile");
          exit( 1);
       }   
-
-      if( auto_inc)
-         free( outfile);
    }
 
    assert( i <= argc);
@@ -533,6 +563,7 @@ int  main( int argc, char *argv[])
       // need a look ahead (d)
       do
       {
+         ++length;
          d = getc_unlocked( fin);
          emit_char_escape_if_needed( &e, c, d);
          c = d;
@@ -544,5 +575,32 @@ int  main( int argc, char *argv[])
    }
    emit_done( &e);
 
+   if( outfile)
+   {
+      fputs( "/*\n"
+             " * generated with: mulle-c-string-escape", stderr);
+      for( i = 1; i < argc; i++)
+      {
+         fputc( ' ', stderr);
+         fputs( argv[ i], stderr);
+      }
+
+      fputs( "\n"
+             " */\n"
+             "static char   ", stderr);
+      fprint_filename_as_identifier( stderr, outfile);
+      fprintf( stderr, "[] =\n"
+             "#include \"%s\"\n"
+";\n"
+"#define s_", outfile);
+      fprint_filename_as_identifier( stderr, outfile);
+      fputs( "( sizeof( ", stderr);
+      fprint_filename_as_identifier( stderr, outfile);
+      fputs( " - 1)\n", stderr);
+   }
+
+   // pedantic
+   if( auto_inc)
+      free( outfile);
    return( 0);
 }

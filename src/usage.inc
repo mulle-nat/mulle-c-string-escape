@@ -27,6 +27,7 @@
 "   -l <n>   : targetted line length (80)\n"
 "   -n       : don't create a new line for linefeeds in text\n"
 "   -p <s>   : use a custom prefix instead of spaces or TAB\n"
+"   -q       : don't print helpful C code\n"
 "   -t <s>   : visual size of TAB in text (8)\n"
 "   -v       : print version information and exit\n"
 "\n"

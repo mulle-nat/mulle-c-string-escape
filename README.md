@@ -15,6 +15,7 @@ the output like so:
 static char  data[] =
 #include "data.inc"
 ;
+#define s_data ( sizeof( data) - 1)
 ```
 
 > #### Note
@@ -26,11 +27,12 @@ static char  data[] =
 
 See [usage.txt](src/usage.txt) for options.
 
+
 ## Example
 
 Let's use **mulle-c-string-escape** to create a C string representation of 
-itself into a file "x.inc". We use `cmake` here, instead of `mulle-sde craft --release`, to ease 
-the developer's fear of the unknown:
+itself into a file "x.inc". We use `cmake` here, instead of
+`mulle-sde craft --release`, to ease the developer's fear of the unknown:
 
 ``` sh
 mkdir -p kitchen/Release
