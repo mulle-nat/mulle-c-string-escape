@@ -1,0 +1,38 @@
+mulle-c-string-escape error:unknown input --help
+
+Usage:
+   mulle-c-string-escape [options] [infile] [outfile]
+
+   ➿ mulle-c-string-escape turns data into C-strings
+
+   Non-ASCII characters will be escaped to hex or octal. C-escapes are used for
+   known C escapes like '\b'. The output is separated into lines of approximately
+   even length and does not exceed the chosen line length.
+   You can feed it binary or text files.
+
+   You can then easily `#include` the output, or copy/paste it into your
+   C program like so:
+
+      static char  data[] =
+      #include "data.inc"
+      ;
+      #define s_data  (sizeof( data) - 1)
+
+Example:
+   mulle-c-string-escape -0 -l 120 < mytext.txt
+
+Options:
+   -[01234] : zero to four space prefix (TAB)
+   -c       : append ".inc" to infile to generate outfile
+   -e       : escape TAB characters
+   -h       : this help
+   -l <n>   : targetted line length (80)
+   -n       : don't create a new line for linefeeds in text
+   -p <s>   : use a custom prefix instead of spaces or TAB
+   -q       : don't print helpful C code
+   -t <s>   : visual size of TAB in text (8)
+   -v       : print version information and exit
+
+Dedication:
+   To the memory of Oliver "General" Mondry (mondry@me.com)
+

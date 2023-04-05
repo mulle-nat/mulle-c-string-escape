@@ -16,9 +16,18 @@ endif()
 if( NOT LIBRARY_IDENTIFIER)
    string( MAKE_C_IDENTIFIER "${LIBRARY_NAME}" LIBRARY_IDENTIFIER)
 endif()
+
+include( StringCase)
+
 if( NOT LIBRARY_UPCASE_IDENTIFIER)
-   string( TOUPPER "${LIBRARY_IDENTIFIER}" LIBRARY_UPCASE_IDENTIFIER)
+   snakeCaseString( "${LIBRARY_IDENTIFIER}" LIBRARY_UPCASE_IDENTIFIER)
+   string( TOUPPER "${LIBRARY_UPCASE_IDENTIFIER}" LIBRARY_UPCASE_IDENTIFIER)
 endif()
+if( NOT LIBRARY_DOWNCASE_IDENTIFIER)
+   snakeCaseString( "${LIBRARY_IDENTIFIER}" LIBRARY_DOWNCASE_IDENTIFIER)
+   string( TOLOWER "${LIBRARY_DOWNCASE_IDENTIFIER}" LIBRARY_DOWNCASE_IDENTIFIER)
+endif()
+
 # if( NOT LIBRARY_DOWNCASE_IDENTIFIER)
 #    string( TOLOWER "${LIBRARY_IDENTIFIER}" LIBRARY_DOWNCASE_IDENTIFIER)
 # endif()
@@ -38,10 +47,20 @@ endif()
 include( PreLibrary OPTIONAL)
 
 
-# support header only library
-if( LIBRARY_SOURCES)
+# support header only library, and library just made up of pre-compiled
+# object files
+if( LIBRARY_SOURCES OR OTHER_LIBRARY_OBJECT_FILES OR OTHER_${LIBRARY_UPCASE_IDENTIFIER}_OBJECT_FILES)
    # RPATH must be ahead of add_library, but is it really needed ?
    include( InstallRpath OPTIONAL)
+
+   option( DLL_EXPORT_ALL "Export all global symbols for DLL" ON)
+
+   set( CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ${DLL_EXPORT_ALL})
+
+   set( ALL_OBJECT_FILES
+      ${OTHER_LIBRARY_OBJECT_FILES}
+      ${OTHER_${LIBRARY_UPCASE_IDENTIFIER}_OBJECT_FILES}
+   )
 
    # Libraries are built in two stages:
    #
@@ -55,38 +74,61 @@ if( LIBRARY_SOURCES)
    # This also enables parallel builds, when the products for a link aren't
    # available yet.
    #
-   add_library( "_1_${LIBRARY_NAME}" OBJECT
-      ${LIBRARY_SOURCES}
-   )
 
-   set( ALL_OBJECT_FILES
-      $<TARGET_OBJECTS:_1_${LIBRARY_NAME}>
-      ${OTHER_LIBRARY_OBJECT_FILES}
-      ${OTHER_${LIBRARY_UPCASE_IDENTIFIER}_OBJECT_FILES}
-   )
+   if( LIBRARY_SOURCES)
+      set( LIBRARY_COMPILE_TARGET "_1_${LIBRARY_NAME}")
+      set( LIBRARY_LINK_TARGET "${LIBRARY_NAME}")
 
-   set_property( TARGET "_1_${LIBRARY_NAME}" PROPERTY CXX_STANDARD 11)
+      add_library( ${LIBRARY_COMPILE_TARGET} OBJECT
+         ${LIBRARY_SOURCES}
+      )
 
-   #
-   # Sometimes needed for elder linux ? Seen on xenial, with mulle-mmap
-   #
-   if( BUILD_SHARED_LIBS)
-      set_property(TARGET "_1_${LIBRARY_NAME}" PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+      set( ALL_OBJECT_FILES
+         $<TARGET_OBJECTS:${LIBRARY_COMPILE_TARGET}>
+         ${ALL_OBJECT_FILES}
+      )
+
+      set_target_properties( ${LIBRARY_COMPILE_TARGET}
+         PROPERTIES
+            CXX_STANDARD 11
+#            DEFINE_SYMBOL "${LIBRARY_UPCASE_IDENTIFIER}_SHARED_BUILD"
+      )
+
+      target_compile_definitions( ${LIBRARY_COMPILE_TARGET} PRIVATE "${LIBRARY_UPCASE_IDENTIFIER}_BUILD")
+
+      #
+      # Sometimes needed for elder linux ? Seen on xenial, with mulle-mmap
+      #
+      if( BUILD_SHARED_LIBS)
+         set_property( TARGET ${LIBRARY_COMPILE_TARGET} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+      endif()
+   else()
+      set( LIBRARY_COMPILE_TARGET "${LIBRARY_NAME}")
+      set( LIBRARY_LINK_TARGET "${LIBRARY_NAME}")
    endif()
 
 
    if( STAGE2_SOURCES)
-      add_library( "_2_${LIBRARY_NAME}" OBJECT
+      set( LIBRARY_STAGE2_TARGET "_2_${LIBRARY_NAME}")
+
+      add_library( ${LIBRARY_STAGE2_TARGET} OBJECT
          ${STAGE2_SOURCES}
          ${STAGE2_HEADERS}
       )
       set( ALL_OBJECT_FILES
          ${ALL_OBJECT_FILES}
-         $<TARGET_OBJECTS:_2_${LIBRARY_NAME}>
+         $<TARGET_OBJECTS:${LIBRARY_STAGE2_TARGET}>
       )
-      set_property( TARGET "_2_${LIBRARY_NAME}" PROPERTY CXX_STANDARD 11)
+
+      set_target_properties( ${LIBRARY_STAGE2_TARGET}
+         PROPERTIES
+            CXX_STANDARD 11
+#            DEFINE_SYMBOL "${LIBRARY_UPCASE_IDENTIFIER}_SHARED_BUILD"
+      )
+      target_compile_definitions( ${LIBRARY_STAGE2_TARGET} PRIVATE "${LIBRARY_UPCASE_IDENTIFIER}_BUILD")
+
       if( BUILD_SHARED_LIBS)
-         set_property(TARGET "_2_${LIBRARY_NAME}" PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+         set_property(TARGET ${LIBRARY_STAGE2_TARGET} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
       endif()
    else()
       if( STAGE2_HEADERS)
@@ -113,12 +155,25 @@ if( LIBRARY_SOURCES)
          ${LIBRARY_RESOURCES}
       )
 
-      add_dependencies( "${LIBRARY_NAME}" "_1_${LIBRARY_NAME}")
+      add_dependencies( "${LIBRARY_NAME}" ${LIBRARY_COMPILE_TARGET})
       if( STAGE2_SOURCES)
-         add_dependencies( "${LIBRARY_NAME}" "_2_${LIBRARY_NAME}")
+         add_dependencies( "${LIBRARY_NAME}" ${LIBRARY_STAGE2_TARGET})
       endif()
 
+      # MEMO: DEFINE_SYMBOL is only active when building shared libs
+      #                     we want it for static too..
+      set_target_properties( "${LIBRARY_NAME}"
+         PROPERTIES
+            CXX_STANDARD 11
+#            DEFINE_SYMBOL "${LIBRARY_UPCASE_IDENTIFIER}_SHARED_BUILD"
+      )
+      target_compile_definitions( "${LIBRARY_NAME}" PRIVATE "${LIBRARY_UPCASE_IDENTIFIER}_BUILD")
 
+      # output library with 'd' suffix when in windows (and creating a debug lib)
+      if( MSVC)
+         set_target_properties( "${LIBRARY_NAME}" PROPERTIES DEBUG_POSTFIX "d")
+      endif()
+      
       #
       # allow forward definitions in shared library
       #
@@ -175,11 +230,6 @@ else()
 endif()
 
 include( PostLibrary OPTIONAL)
-
-message( STATUS "PUBLIC_HEADERS=${PUBLIC_HEADERS}")
-message( STATUS "PRIVATE_HEADERS=${PRIVATE_HEADERS}")
-message( STATUS "PROJECT_INSTALLABLE_HEADERS=${PROJECT_INSTALLABLE_HEADERS}")
-
 
 # clean LIBRARY_SOURCES for the next run, if set by this script
 if( __LIBRARY_SOURCES_UNSET )

@@ -1,0 +1,21 @@
+Non-ASCII characters will be escaped to hex or octal. C escape sequences are used 
+for the predefined sequences like '\b'. The output is separated into lines of approximately
+even length and does not exceed the chosen line length. An example of a 
+conversion is [usage.txt](src/usage.txt) being turned into [usage.inc](src/usage.inc).
+You can feed it binary or text files.
+
+You can copy/paste the output as string contents into your C source or `#include` 
+the output like so:
+
+``` c
+static char  data[] =
+#include "data.inc"
+;
+#define s_data ( sizeof( data) - 1)
+```
+
+> #### Note
+>
+> C will append a '\0' character to strings! So the actual data length 
+> is `sizeof( data) - 1`.
+

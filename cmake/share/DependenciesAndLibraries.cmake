@@ -12,16 +12,13 @@ endif()
 # this.
 #
 include( _Libraries OPTIONAL)
-include( _Dependencies OPTIONAL)
 
 #
-# This is an experiment to have "flat" headers. I don't use it though (yet)
+# If we are in an IDE like CLion and the dependencies haven't been made yet
+# cmake is unhappy, try to avoid that.
 #
-option( INHERIT_DEPENDENCY_INCLUDES "Make headers of dependencies available as local headers" OFF)
-
-if( INHERIT_DEPENDENCY_INCLUDES)
-   # message( STATUS "INHERITED_INCLUDE_DIRS=\"${INHERITED_INCLUDE_DIRS}\"" )
-
-   # these generate -I arguments, that add to the user search path
-   include_directories( ${INHERITED_INCLUDE_DIRS})
+if( IS_DIRECTORY "${DEPENDENCY_DIR}")
+   include( _Dependencies OPTIONAL)
+else()
+   message( STATUS "DEPENDENCY_DIR \${DEPENDENCY_DIR}\" is missing, so no dependencies")
 endif()

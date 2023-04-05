@@ -30,27 +30,75 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-source_task_run()
+filesystem_task_run()
 {
-   log_entry "mulle-sde/c-cmake::source_task_run" "$@"
+   log_entry "mulle-sde/c-cmake::filesystem_task_run" "$@"
 
-   log_info "Reflecting ${C_MAGENTA}${C_BOLD}${PROJECT_NAME}${C_INFO} source"
+   log_info "Reflecting ${C_MAGENTA}${C_BOLD}${PROJECT_NAME:-.}${C_INFO} filesystem"
 
+   local rval 
+
+   rval=0
    case "${MULLE_MATCH_TO_CMAKE_RUN}" in
       NO|DISABLE*|OFF)
       ;;
 
       *)
-         exekutor mulle-match-to-cmake ${MULLE_TECHNICAL_FLAGS} "$@"  || return $?
+         exekutor mulle-match-to-cmake ${MULLE_TECHNICAL_FLAGS} "$@"  
+         rval=$?
       ;;
    esac
 
+   if [ $rval -ne 0 ]
+   then
+      log_error "mulle-match-to-cmake ${MULLE_TECHNICAL_FLAGS} $* failed ($rval)"
+   fi
+
+   local rval2
+
+   rval2=0
    case "${MULLE_MATCH_TO_C_RUN}" in
       NO|DISABLE*|OFF)
       ;;
 
       *)
-         exekutor mulle-match-to-c ${MULLE_TECHNICAL_FLAGS} "$@"  || return $?
+         exekutor mulle-match-to-c ${MULLE_TECHNICAL_FLAGS} "$@"
+         rval2=$?
       ;;
    esac
+
+   if [ $rval2 -ne 0 ]
+   then
+      log_error "mulle-match-to-c ${MULLE_TECHNICAL_FLAGS} $* failed ($rval2)"
+   fi
+
+   local rval3
+
+   rval3=0
+   case "${MULLE_PROJECT_CLIB_JSON_RUN}" in
+      YES|ENABLE*|ON)
+         case "${PROJECT_DIALECT}" in
+            objc)
+               exekutor mulle-project-clib-json ${MULLE_TECHNICAL_FLAGS} \
+                                                -a src/reflect/objc-loader.inc \
+                                                -o "clib.json"
+               rval3=$?
+            ;;
+
+            *)
+               exekutor mulle-project-clib-json ${MULLE_TECHNICAL_FLAGS} \
+                                                -o "clib.json"
+               rval3=$?
+            ;;
+         esac
+      ;;
+   esac
+
+   if [ $rval3 -ne 0 ]
+   then
+      log_error "mulle-project-clib-json ${MULLE_TECHNICAL_FLAGS} failed ($rval3)"
+   fi
+
+
+   [ $rval -eq 0 -a $rval2 -eq 0 -o $rval3 -eq 0 ]
 }

@@ -3,3 +3,11 @@ stash/
 build/
 var/
 dependency/
+test/demo
+test/demo2
+test/some-chars
+test/all-chars
+test/output.bin
+test/demo.inc
+test/demo2.inc
+mulle-markdown-preview-*.html

@@ -1,0 +1,7 @@
+{
+   config = {
+      createUsage = YES;
+      skipYouAreHere = YES;
+      skipOverview = YES;
+   }
+}
