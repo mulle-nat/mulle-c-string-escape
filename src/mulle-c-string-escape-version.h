@@ -4,24 +4,24 @@
 /*
  *  version:  major, minor, patch
  */
-#define MULLE_C_STRING_ESCAPE_VERSION  ((1 << 20) | (1 << 8) | 3)
+#define MULLE__C__STRING__ESCAPE_VERSION  ((1UL << 20) | (1 << 8) | 3)
 
 
 static inline unsigned int   mulle_c_string_escape_get_version_major( void)
 {
-   return( MULLE_C_STRING_ESCAPE_VERSION >> 20);
+   return( MULLE__C__STRING__ESCAPE_VERSION >> 20);
 }
 
 
 static inline unsigned int   mulle_c_string_escape_get_version_minor( void)
 {
-   return( (MULLE_C_STRING_ESCAPE_VERSION >> 8) & 0xFFF);
+   return( (MULLE__C__STRING__ESCAPE_VERSION >> 8) & 0xFFF);
 }
 
 
 static inline unsigned int   mulle_c_string_escape_get_version_patch( void)
 {
-   return( MULLE_C_STRING_ESCAPE_VERSION & 0xFF);
+   return( MULLE__C__STRING__ESCAPE_VERSION & 0xFF);
 }
 
 #endif

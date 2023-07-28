@@ -1,3 +1,7 @@
+### 1.1.3
+
+* Various small improvements
+
 ### 1.1.2
 
 * add helpful C output to stderr (squelch with -q)

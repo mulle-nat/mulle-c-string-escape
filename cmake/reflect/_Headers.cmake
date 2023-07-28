@@ -30,6 +30,13 @@ src/include-private.h
 )
 
 #
+# contents selected with patternfile ??-header--project-only-headers
+#
+set( PROJECT_ONLY_HEADERS
+src/usage.inc
+)
+
+#
 # contents selected with patternfile ??-header--public-generated-headers
 #
 set( PUBLIC_GENERATED_HEADERS

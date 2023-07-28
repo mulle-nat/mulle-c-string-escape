@@ -4,3 +4,4 @@ mulle-sde/sde;extra
 mulle-sde/c-cmake;buildtool
 mulle-sde/cmake;buildtool
 mulle-sde/c-demo;extra
+mulle-sde/github-actions;extra

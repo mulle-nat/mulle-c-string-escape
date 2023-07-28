@@ -1,6 +1,6 @@
 # mulle-c-string-escape
 
-#### ➿ mulle-c-string-escape turns data into C strings
+#### ➿ mulle-c-string-escape turns binary data into C strings
 
 Non-ASCII characters will be escaped to hex or octal. C escape sequences are used 
 for the predefined sequences like '\b'. The output is separated into lines of approximately
@@ -22,6 +22,7 @@ static char  data[] =
 >
 > C will append a '\0' character to strings! So the actual data length 
 > is `sizeof( data) - 1`.
+
 
 
 
@@ -118,24 +119,6 @@ diff verify.exe ./kitchen/Release/mulle-c-string-escape
 
 
 
-## Add
-
-Use [mulle-sde](//github.com/mulle-sde) to add mulle-c-string-escape to your project:
-
-``` sh
-mulle-sde add github:mulle-c/mulle-c-string-escape
-```
-
-To only add the sources of mulle-c-string-escape with dependency
-sources use [clib](https://github.com/clibs/clib):
-
-
-``` sh
-clib install --out src/mulle-c mulle-c/mulle-c-string-escape
-```
-
-Add `-isystem src/mulle-c` to your `CFLAGS` and compile all the sources that were downloaded with your project.
-
 
 ## Install
 
@@ -145,7 +128,7 @@ Use [mulle-sde](//github.com/mulle-sde) to build and install mulle-c-string-esca
 
 ``` sh
 mulle-sde install --prefix /usr/local \
-   https://github.com/mulle-c/mulle-c-string-escape/archive/latest.tar.gz
+   https://github.com/mulle-nat/mulle-c-string-escape/archive/latest.tar.gz
 ```
 
 ### Manual Installation

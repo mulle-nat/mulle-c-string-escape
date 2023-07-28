@@ -1,12 +1,12 @@
 {
    project =
    {
-      description="➿ mulle-c-string-escape turns data into C strings";
+      description="➿ mulle-c-string-escape turns binary data into C strings";
       domain="github";
       name="mulle-c-string-escape";
-      user="mulle-c";
+      user="mulle-nat";
       repo="mulle-c-string-escape";
-      homepage="https://github.com/mulle-c/mulle-c-string-escape";
+      homepage="https://github.com/mulle-nat/mulle-c-string-escape";
       license="BSD-3-Clause"
    };
 }

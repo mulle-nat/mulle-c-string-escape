@@ -262,13 +262,13 @@ static void   emit_char( struct emit *e, char c)
 }
 
 
-static inline char   tohexnybble( int v)
+static inline char   tohexnybble( unsigned int v)
 {
    return( (v >= 10) ? ('a' - 10 + v) : '0' + v);
 }
 
 
-static inline char   tooct( int v)
+static inline char   tooct( unsigned int v)
 {
    return( '0' + v);
 }
@@ -298,9 +298,12 @@ static void  emit_unprintable( struct emit *e, int c, int d)
       emit_char2( e, '\\', '0');
    else
       if( ! is_hex_char( d))
-         emit_char4( e, '\\', 'x', tohexnybble( c >> 4), tohexnybble( c & 0xF));
+         emit_char4( e, '\\', 'x', tohexnybble( (unsigned int) c >> 4), 
+                                   tohexnybble( (unsigned int) c & 0xF));
       else
-         emit_char4( e, '\\', tooct( (c >> 6) & 0x7), tooct( (c >> 3) & 0x7), tooct( c & 0x7));
+         emit_char4( e, '\\', tooct( ((unsigned int) c >> 6) & 0x7), 
+                              tooct( ((unsigned int) c >> 3) & 0x7), 
+                              tooct( (unsigned int) c & 0x7));
 }
 
 
@@ -594,9 +597,9 @@ int  main( int argc, char *argv[])
 ";\n"
 "#define s_", outfile);
       fprint_filename_as_identifier( stderr, outfile);
-      fputs( "( sizeof( ", stderr);
+      fputs( " (sizeof( ", stderr);
       fprint_filename_as_identifier( stderr, outfile);
-      fputs( " - 1)\n", stderr);
+      fputs( ") - 1)\n", stderr);
    }
 
    // pedantic

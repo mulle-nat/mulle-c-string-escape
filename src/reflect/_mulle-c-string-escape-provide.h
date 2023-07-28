@@ -9,4 +9,11 @@
  *
  *      mulle-sde environment set MULLE_MATCH_TO_C_RUN DISABLE
  */
+#ifndef _mulle__c__string__escape__provide_h__
+#define _mulle__c__string__escape__provide_h__
+
+
 #include "mulle-c-string-escape-version.h"
+
+
+#endif
